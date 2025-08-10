@@ -1,55 +1,68 @@
 import express from "express";
 import mongoose from "mongoose";
-import cors from "cors"
+import cors from "cors";
+import dotenv from "dotenv";
 import TodoModel from "./Models/Todo.js";
 
+dotenv.config(); // Load env variables from .env
 
-const app=express()
-app.use(cors())
-app.use(express.json())
+const app = express();
 
-mongoose.connect("mongodb+srv://tasks:5oHYItPs9byq4t39@tasks.rsxzeuo.mongodb.net/?retryWrites=true&w=majority&appName=Tasks")
+// CORS setup for both local and production
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173", // React URL
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
+app.use(express.json());
+
+// MongoDB Connection
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log('✅ Database connected successfully');
+    console.log("✅ Database connected successfully");
   })
   .catch((error) => {
-    console.error('❌ Database connection failed:', error.message);
+    console.error("❌ Database connection failed:", error.message);
   });
 
-app.get("/",(req,res)=>{
-    console.log(req)
-    return res.status(234).send("Welcome to work");
-    
-})
-app.post("/add", (req,res) =>{
-        const task=req.body.t;
-        TodoModel.create({
-            task:task
-        }).then(result=>res.json(result))
-        .catch(err=>res.json(err))
-})
-
-app.get("/get",(req,res)=>{
-    TodoModel.find()
-    .then(result=>res.json(result))
-    .catch(err=>res.json(err))
-})
-
-app.put('/update/:id', (req, res) => {
-    const { id } = req.params;
-    TodoModel.findByIdAndUpdate({_id: id}, {done: true}, {new: true}) 
-    .then(result => res.json(result))
-    .catch(err => res.status(500).json({ error: err.message })); 
+// Routes
+app.get("/", (req, res) => {
+  res.status(200).send("Welcome to Work");
 });
 
-app.delete('/delete/:id',(req,res)=>{
-    const { id } = req.params;
-    TodoModel.findByIdAndDelete({_id:id})
-    .then(result => res.json(result))
-    .catch(err => res.status(500).json({ error: err.message })); 
-})
+app.post("/add", (req, res) => {
+  const task = req.body.t;
+  TodoModel.create({ task })
+    .then((result) => res.json(result))
+    .catch((err) => res.status(500).json({ error: err.message }));
+});
 
+app.get("/get", (req, res) => {
+  TodoModel.find()
+    .then((result) => res.json(result))
+    .catch((err) => res.status(500).json({ error: err.message }));
+});
 
-app.listen(5000, () => {
-    console.log('Server is running on http://localhost:5000');
-  });
+app.put("/update/:id", (req, res) => {
+  const { id } = req.params;
+  TodoModel.findByIdAndUpdate({ _id: id }, { done: true }, { new: true })
+    .then((result) => res.json(result))
+    .catch((err) => res.status(500).json({ error: err.message }));
+});
+
+app.delete("/delete/:id", (req, res) => {
+  const { id } = req.params;
+  TodoModel.findByIdAndDelete({ _id: id })
+    .then((result) => res.json(result))
+    .catch((err) => res.status(500).json({ error: err.message }));
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
