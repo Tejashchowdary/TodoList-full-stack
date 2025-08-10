@@ -9,6 +9,12 @@ app.use(cors())
 app.use(express.json())
 
 mongoose.connect("mongodb+srv://tasks:5oHYItPs9byq4t39@tasks.rsxzeuo.mongodb.net/?retryWrites=true&w=majority&appName=Tasks")
+  .then(() => {
+    console.log('✅ Database connected successfully');
+  })
+  .catch((error) => {
+    console.error('❌ Database connection failed:', error.message);
+  });
 
 app.get("/",(req,res)=>{
     console.log(req)
