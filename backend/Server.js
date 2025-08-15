@@ -9,13 +9,14 @@ dotenv.config(); // Load env variables from .env
 const app = express();
 
 // CORS setup for both local and production
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173", // React URL
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: [
+    "http://localhost:5173", // for local dev
+    "https://todo-list-full-stack-psi.vercel.app" // your Vercel frontend
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 
 app.use(express.json());
 
